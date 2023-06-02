@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>{{ title }}</title>
+    <meta name="theme-color" content="#252525">
+    <meta name="twitter:description" content="{{ desc }}">
+    <meta property="og:title" content="{{ title }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta property="og:image" content="/assets/img/thumb.jpeg">
+    <meta name="description" content="{{ desc }}">
+    <meta property="og:type" content="website">
+    <meta name="twitter:title" content="{{ title }}">
+    <meta property="og:description" content="{{ desc }}">
+
+    {% assets "css_all" %}
+    <link rel="stylesheet" href="{{ ASSET_URL }}">
+    {% endassets %}
+
+    {% assets "manifest" %}
+    <link rel="manifest" href="{{ ASSET_URL }}">
+    {% endassets %}
+
+
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/2.0.1/css/ionicons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+</head>
+
+<body style="height: 100%;">
+    <div class="container-fluid p-0">
+        <div class="row g-0 fixed-top">
+            <div class="col-sm-9 col-md-9 col-lg-8 mx-auto bg-dark w-100 h-auto p-2">
+                <h5 class="text-light" id="name_user"><span style="color: rgb(255, 255, 255);">Ihsan Devs</span></h5>
+
+                {# Status online of other users #}
+                <span style="color: rgb(176, 176, 176);" id="status_online">Total online users: 32</span>
+                <br />
+
+                {# Status typing of other users #}
+                <span class="text-muted small" style="font-style: italic;" id="status_typing"></span>
+
+                <button
+                    class="btn btn-danger bg-danger bg-gradient border rounded border-5 border-light shadow-lg d-inline-flex float-end me-2"
+                    data-bs-toggle="tooltip" data-bss-tooltip="" type="button" title="Delete account"
+                    onclick="deleteAccount()"><i class="far fa-trash-alt"></i></button>
+
+                <button
+                    class="btn btn-primary bg-info bg-gradient border rounded border-5 border-light shadow-lg d-inline-flex float-end me-2"
+                    data-bs-toggle="tooltip" data-bss-tooltip="" type="button" title="Change username"
+                    onclick="setUsername()"><i class="icon ion-edit"></i></button>
+            </div>
+        </div>
+
+        <div class="row g-0 justify-content-center align-items-center overflow-visible"
+            style="margin-bottom: 10rem;margin-top: 9rem;">
+
+            <div class="col-12" id="messages_content">
+                {# message box template with message contain image. coming soon. #}
+                {#<div class="row g-0 justify-content-end">
+                    <div class="col-11 col-sm-7 col-md-6 col-lg-5 p-3" data-aos="fade-up" data-aos-delay="200">
+                        <div class="card">
+                            <div class="card-header p-2 ps-3">
+                                <h6 class="username_chat">Ihsan Devs</h6><span class="small text-muted"><em>Yesterday,
+                                        31-02-2021</em></span>
+                            </div>
+                            <div class="card-body p-2">
+                                <div class="carousel slide carousel-dark" data-bs-ride="false" id="carousel-2">
+                                    <div class="carousel-inner">
+                                        <div class="carousel-item active"><img class="w-100 d-block"
+                                                src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png"
+                                                alt="Slide Image"></div>
+                                        <div class="carousel-item"><img class="w-100 d-block"
+                                                src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png"
+                                                alt="Slide Image"></div>
+                                        <div class="carousel-item"><img class="w-100 d-block"
+                                                src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png"
+                                                alt="Slide Image"></div>
+                                    </div>
+                                    <div><a class="carousel-control-prev" href="#carousel-2" role="button"
+                                            data-bs-slide="prev"><span class="carousel-control-prev-icon"></span><span
+                                                class="visually-hidden">Previous</span></a><a
+                                            class="carousel-control-next" href="#carousel-2" role="button"
+                                            data-bs-slide="next"><span class="carousel-control-next-icon"></span><span
+                                                class="visually-hidden">Next</span></a></div>
+                                    <ol class="carousel-indicators">
+                                        <li data-bs-target="#carousel-2" data-bs-slide-to="0" class="active"></li>
+                                        <li data-bs-target="#carousel-2" data-bs-slide-to="1"></li>
+                                        <li data-bs-target="#carousel-2" data-bs-slide-to="2"></li>
+                                    </ol>
+                                </div>
+                                <p class="card-text">Nullam id dolor id nibh ultricies vehicula ut id elit. Cras justo
+                                    odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida
+                                    at eget metus.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>#}
+
+                {# message box template for sender #}
+                <div class="row g-0 justify-content-end message_from_sender d-none">
+                    <div class="col-11 col-sm-7 col-md-6 col-lg-5 p-3" data-aos="fade-up" data-aos-delay="200">
+                        <div class="card">
+                            <div class="card-header p-2 ps-3">
+                                <h6 class="username_chat">Ihsan Devs</h6><span class="small text-muted"><em
+                                        class="created_at">Yesterday,
+                                        31-02-2021</em></span>
+                            </div>
+                            <div class="card-body p-2">
+                                <p class="card-text">Nullam id dolor id nibh ultricies vehicula ut id elit. Cras justo
+                                    odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida
+                                    at eget metus.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {# message box template for other peoples #}
+                <div class="row g-0 justify-content-start message_from_other d-none">
+                    <div class="col-11 col-sm-7 col-md-6 col-lg-5 p-3" data-aos="fade-up" data-aos-delay="200">
+                        <div class="card">
+                            <div class="card-header p-2 ps-3">
+                                <h6 class="username_of_other">Tata</h6><span class="small text-muted"><em
+                                        class="created_at">Yesterday,
+                                        31-02-2021</em></span>
+                            </div>
+                            <div class="card-body p-2">
+                                <p class="card-text">Nullam id dolor id nibh ultricies vehicula ut id elit. Cras justo
+                                    odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida
+                                    at eget metus.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row g-0 fixed-bottom">
+            <div class="col-sm-9 col-md-9 col-lg-8 mx-auto bg-dark w-100 h-auto p-2">
+                <form><textarea id="text_message"
+                        class="placeholder border rounded border-5 border-light form-control overflow-auto"
+                        placeholder="Message..."></textarea><button
+                        class="btn btn-primary bg-primary bg-gradient border rounded border-5 border-light shadow-lg mt-2 me-2"
+                        data-bs-toggle="modal" data-bss-tooltip="" type="button" title="Insert images"
+                        data-bs-target="#modal-message-misc"><i class="far fa-image"></i></button><button
+                        class="btn btn-primary bg-primary bg-gradient border rounded border-5 border-light shadow-lg mt-2"
+                        data-bs-toggle="tooltip" data-bss-tooltip="" type="button" title="Send"
+                        onclick="sendMessage()"><i class="icon ion-android-send"></i></button></form>
+            </div>
+        </div>
+    </div>
+
+    {# modal set username #}
+    <div class="modal" role="dialog" tabindex="-1" id="modal-set-username">
+        <div class="modal-dialog modal-dialog-scrollable modal-fullscreen" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Setting</h4>
+                </div>
+                <div class="modal-body">
+                    <p>Please enter a username :</p><input type="text" id="username" class="form-control"
+                        name="username" placeholder="Username...">
+                </div>
+                <div class="modal-footer"><button class="btn btn-primary" id="save_username" type="button"
+                        onclick="saveUsername()">Save</button></div>
+            </div>
+        </div>
+    </div>
+
+    {# modal message misc #}
+    <div class="modal fade" role="dialog" tabindex="-1" id="modal-message-misc">
+        <div class="modal-dialog modal-dialog-scrollable" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Oups..</h4><button class="btn-close" type="button" aria-label="Close"
+                        data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>This feature doesn't available for now. If you want to contribute this project, you can visit
+                        this link. <a href="https://github.com/IhsanDevs/PythonChat"
+                            target="_blank">https://github.com/IhsanDevs/PythonChat</a></p>
+                </div>
+                <div class="modal-footer"><button class="btn btn-secondary" type="button"
+                        data-bs-dismiss="modal">Close</button></div>
+            </div>
+        </div>
+    </div>
+
+    {# toast template #}
+    <div class="toast fade top-50 end-0 position-fixed bg-primary text-light border-0 hide" role="alert" id="toast-1"
+        data-bs-delay="3000">
+        <div class="toast-body" role="alert">
+            <p><span style="color: rgb(255, 255, 255);" id="toast_message">Nullam id dolor id nibh ultricies vehicula ut
+                    id elit. Cras
+                    justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget
+                    metus.</span></p>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+    {% assets "js_all" %}
+    <script src="{{ ASSET_URL }}"></script>
+    {% endassets %}
+</body>
+
+</html>
