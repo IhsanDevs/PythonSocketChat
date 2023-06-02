@@ -1,4 +1,5 @@
-from routes import sio, app
+from routes import sio as application
+from routes import app
 
 if __name__ == "__main__":
-    sio.run(app, host="0.0.0.0", port=5001, debug=True)
+    application.run(app)

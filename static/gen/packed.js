@@ -57,6 +57,7 @@ function toastMessage(message) {
     duration: 3000,
   }).showToast();
 }
+
 function setUsername() {
   const modal_set_username = document.getElementById("modal-set-username");
   const modal_set_username_bs = new bootstrap.Modal(modal_set_username, {
@@ -70,13 +71,15 @@ function setUsername() {
 function saveUsername() {
   const username = document.getElementById("username").value;
   if (username) {
+    const oldUsername = localStorage.getItem("username");
     localStorage.setItem("username", username);
 
-    if (localStorage.getItem("id")) {
+    if (localStorage.getItem("id") !== null) {
       // notify to server
       socket.emit(
-        "updateUser",
+        "updatedUser",
         JSON.stringify({
+          oldUsername: oldUsername,
           username: username,
           id: localStorage.getItem("id"),
           created_at: Date(),
@@ -84,7 +87,7 @@ function saveUsername() {
         })
       );
 
-      window.location.reload();
+      toastMessage("Username updated");
     } else {
       // generate random id
       const randomId = Math.floor(Math.random() * 1000000);
@@ -100,14 +103,14 @@ function saveUsername() {
           status: "new-user",
         })
       );
-
-      window.location.reload();
     }
 
     const modal_set_username = document.getElementById("modal-set-username");
     const modal_set_username_bs =
       bootstrap.Modal.getInstance(modal_set_username);
     modal_set_username_bs.hide();
+    // remove modal-backdrop
+    document.getElementsByClassName("modal-backdrop")[0].remove();
   } else {
     document.getElementById("username").classList.add("is-invalid");
     const span = document.createElement("span");
@@ -138,13 +141,7 @@ function deleteAccount() {
   const username = localStorage.getItem("username");
   const id = localStorage.getItem("id");
   // notify to server
-  socket.emit("deleteUser", JSON.stringify({ username: username, id: id }));
-
-  // clear localStorage
-  localStorage.clear();
-
-  // reload page
-  window.location.reload();
+  socket.emit("deletedUser", JSON.stringify({ username: username, id: id }));
 }
 
 function sendMessage() {
@@ -210,7 +207,7 @@ function addMessageBoxFromSender(message, created_at) {
   scrollToBottom();
 }
 
-function addMessageBoxFromOther(message, username, created_at) {
+function addMessageBoxFromOther(message, username, created_at, user_id) {
   // get template from class "message_from_other". then change innerText with message in class "card-text"
   const template = document.getElementsByClassName("message_from_other")[0];
   template.getElementsByClassName("card-text")[0].innerText = message;
@@ -220,6 +217,9 @@ function addMessageBoxFromOther(message, username, created_at) {
 
   // change created_at in class "created_at"
   template.getElementsByClassName("created_at")[0].innerText = created_at;
+
+  // add class same as user_id
+  template.classList.add(user_id);
 
   // clone template
   const clone = template.cloneNode(true);
@@ -242,10 +242,7 @@ function getAllMessages() {
 
 function scrollToBottom() {
   const messages_content = document.getElementsByClassName("overflow-auto")[0];
-  messages_content.scroll({
-    top: messages_content.scrollHeight,
-    behavior: "smooth",
-  });
+  messages_content.scrollTo(0, messages_content.scrollHeight);
 }
 
 // add event listener for typing message in textarea
@@ -275,12 +272,10 @@ document.getElementById("text_message").addEventListener("blur", function () {
 });
 
 socket.on("connect", function () {
-  toastMessage("Connected to server");
   // if user has username, send to server
   const username = localStorage.getItem("username");
   const id = localStorage.getItem("id");
 
-  getAllMessages();
   if (username) {
     socket.emit(
       "newUser",
@@ -297,7 +292,15 @@ socket.on("connect", function () {
 });
 
 socket.on("disconnect", function () {
-  toastMessage("Disconnected from server");
+  socket.emit(
+    "newUser",
+    JSON.stringify({
+      username: localStorage.getItem("username"),
+      id: localStorage.getItem("id"),
+      status: "offline",
+      created_at: Date(),
+    })
+  );
 });
 
 socket.on("newMessage", function (data) {
@@ -333,13 +336,18 @@ socket.on("getAllMessages", function (data) {
     const created_at = message.created_at;
 
     // check if sender is user
-    if (senderId === localStorage.getItem("id")) {
+    if (senderId == localStorage.getItem("id")) {
       addMessageBoxFromSender(messageContent, created_at);
       return;
     }
 
     // add message to message box
-    addMessageBoxFromOther(messageContent, senderUsername, created_at);
+    addMessageBoxFromOther(
+      messageContent,
+      senderUsername,
+      created_at,
+      senderId
+    );
   });
 
   // scroll to bottom
@@ -358,18 +366,102 @@ socket.on("typing", function (data) {
     statusTyping.innerText = "";
   }
 });
+
+socket.on("updatedUser", function (data) {
+  const decodedJson = JSON.parse(data);
+  const username = decodedJson.username;
+  const oldUsername = decodedJson.oldUsername;
+  const status = decodedJson.status;
+  const id = decodedJson.id;
+  const created_at = decodedJson.created_at;
+
+  if (localStorage.getItem("id") != id) {
+    toastMessage(`${oldUsername} changed username to ${username}`);
+  }
+
+  setHeadingUsername();
+  // change username in heading username if contain class same as id
+  const headingUsername = document.getElementsByClassName(id);
+  for (let i = 0; i < headingUsername.length; i++) {
+    headingUsername[i].getElementsByClassName(
+      "username_of_other"
+    )[0].innerText = username;
+  }
+});
+
+socket.on("newUser", function (data) {
+  const decodedJson = JSON.parse(data);
+  const username = decodedJson.username;
+  const id = decodedJson.id;
+  const status = decodedJson.status;
+  const created_at = decodedJson.created_at;
+
+  // check if localStorage contain username and id with same id
+  if (localStorage.getItem("id") == id) {
+    // change username in heading username
+    setHeadingUsername();
+    toastMessage(`Welcome ${username}`);
+  } else {
+    toastMessage(`${username} joined the chat`);
+  }
+});
+
+socket.on("offlineUser", function (data) {
+  const decodedJson = JSON.parse(data);
+  const username = decodedJson.username;
+  const id = decodedJson.id;
+  const status = decodedJson.status;
+  const created_at = decodedJson.created_at;
+
+  toastMessage(`${username} left the chat`);
+});
+
+socket.on("onlineUser", function (data) {
+  const decodedJson = JSON.parse(data);
+  const username = decodedJson.username;
+  const id = decodedJson.id;
+  const status = decodedJson.status;
+  const created_at = decodedJson.created_at;
+
+  if (localStorage.getItem("id") == id) {
+    toastMessage("Welcome back");
+  } else {
+    toastMessage(`${username} is online`);
+  }
+});
+
+socket.on("deletedUser", function (data) {
+  const decodedJson = JSON.parse(data);
+  const username = decodedJson.username;
+  const id = decodedJson.id;
+  const status = decodedJson.status;
+  const created_at = decodedJson.created_at;
+
+  if (localStorage.getItem("id") != id) {
+    toastMessage(`${username} has been deleting account`);
+  } else {
+    toastMessage("Your account has been deleted");
+    localStorage.clear();
+    checkUsername();
+  }
+});
+
+// detect if user want to close tab
+window.onbeforeunload = function () {
+  confirm("Are you sure you want to leave?");
+
+  socket.emit(
+    "newUser",
+    JSON.stringify({
+      username: localStorage.getItem("username"),
+      id: localStorage.getItem("id"),
+      status: "offline",
+      created_at: Date(),
+    })
+  );
+};
+
 // real time check username
 checkUsername();
 setHeadingUsername();
-setInterval(() => {
-  const username = localStorage.getItem("username");
-  const id = localStorage.getItem("id");
-  if (username) {
-    setHeadingUsername();
-  }
-
-  if (!id) {
-    const randomId = Math.floor(Math.random() * 1000000);
-    localStorage.setItem("id", randomId);
-  }
-}, 1000);
+getAllMessages();

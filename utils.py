@@ -80,6 +80,12 @@ class Utils:
         self.conn.execute("DELETE FROM users WHERE user_id = ?", (user_id,))
         self.conn.commit()
 
+    def update_user(self, user_id, username):
+        self.conn.execute(
+            "UPDATE users SET username = ? WHERE user_id = ?", (username, user_id)
+        )
+        self.conn.commit()
+
 
 def decode_data(data):
     return json.loads(data)
